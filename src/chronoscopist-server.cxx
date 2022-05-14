@@ -30,8 +30,7 @@ void ChronoServer::handle_accept(ChronoServerConnection_ptr added_customer, cons
 
 	added_customer->start();
 	ChronoServerConnection_ptr new_customer = ChronoServer::CreateConnection_ptr();
-	ChronoServer::chronoclients.emplace_back(new_customer);
-	// BOOST_LOG_TRIVIAL(info) << " Now total connections: " << CamClientManager::proxy_customers.size() << std::endl;;
+	ServerMsgManager::add_connection(new_customer);
 	acceptor.async_accept(new_customer->sock(), boost::bind(&ChronoServer::handle_accept, new_customer, _1));
 }
 
@@ -43,11 +42,11 @@ ChronoServerConnection_ptr ChronoServer::CreateConnection_ptr()
 
 int main() {
 	std::cout << "Chronoscopist - PC usage time control server " << std::endl;
-	try 
+	try
 	{
 		// ChronoServerConnection::camProxy = &camProxy;
 		ChronoServerConnection_ptr new_connection = ChronoServer::CreateConnection_ptr();
-		ChronoServer::chronoclients.emplace_back(new_connection);
+		ServerMsgManager::add_connection(new_connection);
 		acceptor.async_accept(new_connection->sock(), boost::bind(&ChronoServer::handle_accept, new_connection, _1));
 	}
 	catch (std::exception& e)
@@ -58,5 +57,3 @@ int main() {
 	chronoServer.glob_io_service->run();
 	return 0;
 }
-
-std::list<ChronoServerConnection_ptr> ChronoServer::chronoclients;

@@ -11,14 +11,14 @@ using namespace boost::asio::ip;
 class ChronoClientConnection : public std::enable_shared_from_this<ChronoClientConnection>
 {
     public:
-        ChronoClientConnection(boost::asio::io_service& io_service) : socket_{io_service}, resolver_{io_service} {};
+        ChronoClientConnection(boost::asio::io_service& io_service) : resolver_{io_service}, socket_{io_service} {};
         void connect(const std::string &ip, const std::string &port);
     private:
         tcp::resolver resolver_;
         tcp::socket socket_;
         boost::asio::streambuf request_;
         boost::asio::streambuf response_;
-        chronoscopist::message write_buffer_;
+        chronoscopist::chrmessage write_buffer_;
 
         // void do_connect();
         void closeconnection();

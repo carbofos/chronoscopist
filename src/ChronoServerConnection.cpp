@@ -1,14 +1,14 @@
-#include "ChronoServerConnection.h"
 #include <iostream>
+#include "ChronoServerConnection.h"
 #include "ServerMsgManager.h"
+#include "config.h"
 
 boost::asio::ip::tcp::socket & ChronoServerConnection::sock() { return sock_;}
 
 void ChronoServerConnection::start()
 {
     std::cout << "Starting new connection from " << ip() << std::endl;
-    std::cout << "Queueing new message" << std::endl;
-    ServerMsgManager::queue_message(chronoscopist::messagetype::ping, "Ping");
+    queue_tosend_push_message(chronoscopist::chrmessage::generate_message(chronoscopist::messagetype::ping, "Ping"));
     do_read();
 }
 
@@ -51,19 +51,19 @@ void ChronoServerConnection::on_read(const boost::system::error_code & err, size
         stop();
         return;
         }
-    if (bytes != sizeof(chronoscopist::message))
+    if (bytes != sizeof(chronoscopist::chrmessage))
         std::cout << "Received bytes does not correspond size of chronoscopist::message\n";
     else
     {
-        ServerMsgManager::messages_in.push(read_buffer_);
-        std::cout << "Received new message in queue " << ServerMsgManager::messages_in.size() << std::endl;
+        queue_received_push_message(read_buffer_);
+        std::cout << "Received new message in queue " << messages_in.size() << ": " << read_buffer_.text << std::endl;
     }
     do_read();
 }
 
 void ChronoServerConnection::do_read()
 {
-    async_read(sock_, boost::asio::buffer(&read_buffer_, sizeof(chronoscopist::message)),
+    async_read(sock_, boost::asio::buffer(&read_buffer_, sizeof(chronoscopist::chrmessage)),
                 boost::bind(&ChronoServerConnection::on_read, shared_from_this(), boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred)
                 );
 }
@@ -72,16 +72,30 @@ void ChronoServerConnection::send_messages()
 {
     // sock_.async_write_some( boost::asio::buffer(msg.c_str(), msg.length()),
     //             boost::bind(&ChronoServerConnection::on_write, shared_from_this(), boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred) );
-    while (ServerMsgManager::messages_out.size() > 0)
+    while (messages_out.size() > 0)
     {
-        chronoscopist::message outmsg = ServerMsgManager::messages_out.front();
-        ServerMsgManager::messages_out.pop();
-
+        auto outmsg = queue_pop_message();
         boost::asio::async_write(sock_, boost::asio::buffer(&outmsg, sizeof(outmsg)),
                 boost::bind(&ChronoServerConnection::on_write, shared_from_this(), boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred) );
-
     }
 
+}
+
+chronoscopist::chrmessage ChronoServerConnection::queue_pop_message()
+{
+        chronoscopist::chrmessage outmsg = messages_out.front();
+        messages_out.pop();
+        return outmsg;
+}
+
+void ChronoServerConnection::queue_tosend_push_message(chronoscopist::chrmessage newmessage)
+{
+    messages_out.push(newmessage);
+}
+
+void ChronoServerConnection::queue_received_push_message(chronoscopist::chrmessage newmessage)
+{
+    messages_in.push(newmessage);
 }
 
 void ChronoServerConnection::on_write(const boost::system::error_code & err, const size_t bytes)
@@ -104,6 +118,7 @@ size_t ChronoServerConnection::read_complete(const boost::system::error_code & e
         return 0;
     }
     return 0;
+    unused(bytes);
 }
 
 void ChronoServerConnection::do_reconnect()

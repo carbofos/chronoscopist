@@ -1,4 +1,6 @@
 #include "ChronoClientConnection.h"
+#include "ChronoServerConnection.h"
+#include "config.h"
 
 void ChronoClientConnection::connect(const std::string &ip, const std::string &port)
 {
@@ -58,10 +60,16 @@ void ChronoClientConnection::handle_connect(const boost::system::error_code& err
 void ChronoClientConnection::handle_write_request(const boost::system::error_code& err)
 {
     std::cout << "handle_write_request()" << std::endl;
+
+    
+    write_buffer_= chronoscopist::chrmessage::generate_message(chronoscopist::messagetype::ping, "Hello");
+
+
     socket_.async_write_some( boost::asio::buffer(&write_buffer_, sizeof(write_buffer_)),
             boost::bind(&ChronoClientConnection::on_write, shared_from_this(), boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred) );
 
     closeconnection();
+    unused(err);
 }
 
 void ChronoClientConnection::on_write(const boost::system::error_code & err, const size_t bytes)
@@ -72,8 +80,7 @@ void ChronoClientConnection::on_write(const boost::system::error_code & err, con
         // stop();
         return;
     }
-    // tp_last_operation = std::chrono::steady_clock::now();
-    // unused(bytes);
+    unused(bytes);
 }
 
 void ChronoClientConnection::closeconnection()

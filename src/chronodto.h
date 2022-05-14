@@ -1,6 +1,5 @@
 #pragma once
-#define VERSION_1 100000001
-#define MAX_MESSAGE_TEXT 1024
+#include "config.h"
 
 namespace chronoscopist
 {
@@ -13,8 +12,12 @@ namespace chronoscopist
         unlock
     };
 
-    struct message
+    struct chrmessage
     {
+        // chrmessage() = default;
+        // chrmessage(const chrmessage &msg);
+        static chrmessage generate_message(const messagetype msgtype, const char* text);
+
         int version = VERSION_1;
         messagetype type;
         char text[MAX_MESSAGE_TEXT];

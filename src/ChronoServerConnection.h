@@ -1,5 +1,6 @@
 #pragma once
 #include <memory>
+#include <queue>
 #include <boost/bind/bind.hpp>
 #include <boost/asio.hpp>
 #include "chronodto.h"
@@ -14,6 +15,9 @@ class ChronoServerConnection : public std::enable_shared_from_this<ChronoServerC
         ChronoServerConnection() : sock_(service) {};
         void start();
         void stop();
+        void queue_tosend_push_message(chronoscopist::chrmessage);
+        void queue_received_push_message(chronoscopist::chrmessage);
+        chronoscopist::chrmessage queue_pop_message();
 
     protected:
         ChronoServerConnection(const ChronoServerConnection&) = delete;
@@ -28,8 +32,10 @@ class ChronoServerConnection : public std::enable_shared_from_this<ChronoServerC
         void do_connect();
         void do_reconnect();
         void do_disconnect();
-        chronoscopist::message read_buffer_;
+        chronoscopist::chrmessage read_buffer_;
         std::string ip();
+        std::queue<chronoscopist::chrmessage> messages_in;
+        std::queue<chronoscopist::chrmessage> messages_out;
 };
 
 typedef std::shared_ptr<ChronoServerConnection> ChronoServerConnection_ptr;
