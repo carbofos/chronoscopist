@@ -68,7 +68,6 @@ void ChronoClientConnection::handle_write_request(const boost::system::error_cod
     socket_.async_write_some( boost::asio::buffer(&write_buffer_, sizeof(write_buffer_)),
             boost::bind(&ChronoClientConnection::on_write, shared_from_this(), boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred) );
 
-    closeconnection();
     unused(err);
 }
 
@@ -80,7 +79,35 @@ void ChronoClientConnection::on_write(const boost::system::error_code & err, con
         // stop();
         return;
     }
+
+    std::cout << "ChronoClientConnection::on_write ok" << std::endl;
+    do_read();
     unused(bytes);
+}
+
+void ChronoClientConnection::do_read()
+{
+    std::cout << "do_read()" << std::endl;
+    boost::asio::async_read(socket_, boost::asio::buffer(&read_buffer_, sizeof(chronoscopist::chrmessage)),
+                boost::bind(&ChronoClientConnection::on_read, shared_from_this(), boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred)
+                );
+    std::cout << "done do_read()" << std::endl;
+}
+
+void ChronoClientConnection::on_read(const boost::system::error_code & err, size_t bytes)
+{
+    if ( err) {
+        std::cerr << "on_read() error\n";
+        // stop();
+        return;
+        }
+    if (bytes != sizeof(chronoscopist::chrmessage))
+        std::cout << "Received bytes does not correspond size of chronoscopist::message\n";
+    else
+    {
+        std::cout << "Received new message: " << read_buffer_.text << std::endl;
+    }
+    do_read();
 }
 
 void ChronoClientConnection::closeconnection()

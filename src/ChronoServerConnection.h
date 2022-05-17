@@ -15,6 +15,7 @@ class ChronoServerConnection : public std::enable_shared_from_this<ChronoServerC
         ChronoServerConnection() : sock_(service) {};
         void start();
         void stop();
+        void send_messages();
         void queue_tosend_push_message(chronoscopist::chrmessage);
         void queue_received_push_message(chronoscopist::chrmessage);
         chronoscopist::chrmessage queue_pop_message();
@@ -27,7 +28,6 @@ class ChronoServerConnection : public std::enable_shared_from_this<ChronoServerC
         void on_read(const boost::system::error_code & err, const size_t bytes);
         void on_write(const boost::system::error_code & err, const size_t bytes);
         void do_read();
-        void send_messages();
         size_t read_complete(const boost::system::error_code & err, const size_t bytes);
         void do_connect();
         void do_reconnect();

@@ -19,6 +19,7 @@ class ChronoClientConnection : public std::enable_shared_from_this<ChronoClientC
         boost::asio::streambuf request_;
         boost::asio::streambuf response_;
         chronoscopist::chrmessage write_buffer_;
+        chronoscopist::chrmessage read_buffer_;
 
         // void do_connect();
         void closeconnection();
@@ -28,7 +29,9 @@ class ChronoClientConnection : public std::enable_shared_from_this<ChronoClientC
         void handle_connect(const boost::system::error_code& err,
                 tcp::resolver::iterator endpoint_iterator);
         void handle_write_request(const boost::system::error_code& err);
+        void do_read();
         void handle_read_some(const boost::system::error_code& err, std::size_t recvlen);
         void on_write(const boost::system::error_code & err, const size_t bytes);
+        void on_read(const boost::system::error_code & err, const size_t bytes);
 
 };

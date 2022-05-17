@@ -29,8 +29,8 @@ void ChronoServer::handle_accept(ChronoServerConnection_ptr added_customer, cons
 	// );
 
 	added_customer->start();
+	ServerMsgManager::add_connection(added_customer);
 	ChronoServerConnection_ptr new_customer = ChronoServer::CreateConnection_ptr();
-	ServerMsgManager::add_connection(new_customer);
 	acceptor.async_accept(new_customer->sock(), boost::bind(&ChronoServer::handle_accept, new_customer, _1));
 }
 
@@ -46,7 +46,7 @@ int main() {
 	{
 		// ChronoServerConnection::camProxy = &camProxy;
 		ChronoServerConnection_ptr new_connection = ChronoServer::CreateConnection_ptr();
-		ServerMsgManager::add_connection(new_connection);
+		// ServerMsgManager::add_connection(new_connection);
 		acceptor.async_accept(new_connection->sock(), boost::bind(&ChronoServer::handle_accept, new_connection, _1));
 	}
 	catch (std::exception& e)
