@@ -75,6 +75,14 @@ std::vector<std::string> Db::mysql_oligate_options =
     "mysql_port",
 };
 
+int Db::exec(const std::string &query)
+{
+    mysql_errorcode = mysql_query(&dbcondata, query.c_str() );
+    if (mysql_errorcode)
+        mysql_error_msg = mysql_error(&dbcondata);
+    return mysql_errorcode;
+}
+
 void Db::close()
 {
     mysql_close(dbconptr);

@@ -45,6 +45,33 @@ ChronoServerConnection_ptr ChronoServer::CreateConnection_ptr()
 
 int main() {
 	std::cout << "Chronoscopist - PC usage time control server " << std::endl;
+
+	try
+	{
+		Config::read_global_config();
+		std::cout << "Found config file" << std::endl;
+	}
+	catch (std::exception& e)
+	{
+		std::cout << e.what();
+	}
+
+	if (! Db::have_obligate_options() )
+	{
+		std::cerr << "\nNot enough MySQL prerequisites to connect" << std::endl;
+		exit(-1);
+	}
+
+	if (!Db::init_db() )
+	{
+		std::cerr << "Mysql DB init error" << std::endl;
+		exit(-2);
+	}
+
+	auto result = Db::exec( "INSERT INTO online(ip, time) VALUES(123, NOW() )" );
+	if (result)
+		std::cerr << "Mysql error: " << Db::mysql_error_msg << std::endl;
+
 	try
 	{
 		// ChronoServerConnection::camProxy = &camProxy;
@@ -58,5 +85,7 @@ int main() {
 	}
 	std::thread msgmanager( ServerMsgManager::start );
 	chronoServer.glob_io_service->run();
+
+	Db::close();
 	return 0;
 }

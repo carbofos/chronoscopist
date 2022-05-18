@@ -29,4 +29,5 @@ class Db
         static unsigned int num_fields(result_type * mysql_res);
         static void close();
         static bool have_obligate_options();
+        static int exec(const std::string &query);
 };
