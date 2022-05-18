@@ -2,6 +2,7 @@
 #include <iostream>
 #include "chronoscopist-server.h"
 #include "ServerMsgManager.h"
+#include "db.h"
 
 using namespace boost::placeholders;
 ChronoServer chronoServer;
@@ -16,6 +17,8 @@ void ChronoServer::handle_accept(ChronoServerConnection_ptr added_customer, cons
 		std::cerr << "handle_accept() error: " << err.message() << std::endl;
 		return;
 	}
+
+	// TODO: Disconnect client
 
 	// CamClientManager::proxy_customers.remove_if( [] (const BaseCustomerNetworking_ptr &customers)
 	// 				{	if (customers->failed_to_connectcam() )
