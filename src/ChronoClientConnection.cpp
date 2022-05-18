@@ -39,8 +39,10 @@ void ChronoClientConnection::handle_connect(const boost::system::error_code& err
     std::cout << "handle_connect()" << std::endl;
     if (!err)
     {
+        message_tosend = chronoscopist::chrmessage::generate_message(chronoscopist::messagetype::none, "Hello");
+
         boost::asio::async_write(socket_, request_,
-            boost::bind(&ChronoClientConnection::handle_write_request, shared_from_this(),
+            boost::bind(&ChronoClientConnection::do_write, shared_from_this(),
               boost::asio::placeholders::error));
     }
     else if (endpoint_iterator != tcp::resolver::iterator())
@@ -57,15 +59,12 @@ void ChronoClientConnection::handle_connect(const boost::system::error_code& err
     }
 }
 
-void ChronoClientConnection::handle_write_request(const boost::system::error_code& err)
+void ChronoClientConnection::do_write(const boost::system::error_code& err)
 {
-    std::cout << "handle_write_request()" << std::endl;
-
+    std::cout << "do_write()" << std::endl;
+    // do_read();
     
-    write_buffer_= chronoscopist::chrmessage::generate_message(chronoscopist::messagetype::ping, "Hello");
-
-
-    socket_.async_write_some( boost::asio::buffer(&write_buffer_, sizeof(write_buffer_)),
+    socket_.async_write_some( boost::asio::buffer(&message_tosend, sizeof(message_tosend)),
             boost::bind(&ChronoClientConnection::on_write, shared_from_this(), boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred) );
 
     unused(err);
@@ -88,9 +87,10 @@ void ChronoClientConnection::on_write(const boost::system::error_code & err, con
 void ChronoClientConnection::do_read()
 {
     std::cout << "do_read()" << std::endl;
-    boost::asio::async_read(socket_, boost::asio::buffer(&read_buffer_, sizeof(chronoscopist::chrmessage)),
+    boost::asio::async_read(socket_, boost::asio::buffer(&message_received, sizeof(chronoscopist::chrmessage)),
                 boost::bind(&ChronoClientConnection::on_read, shared_from_this(), boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred)
                 );
+
     std::cout << "done do_read()" << std::endl;
 }
 
@@ -105,7 +105,32 @@ void ChronoClientConnection::on_read(const boost::system::error_code & err, size
         std::cout << "Received bytes does not correspond size of chronoscopist::message\n";
     else
     {
-        std::cout << "Received new message: " << read_buffer_.text << std::endl;
+        std::cout << "Received new message: " << message_received.text << std::endl;
+        switch (message_received.type)
+        {
+        case chronoscopist::messagetype::ping:
+            {
+                std::cout << "PING command " << std::endl;
+                boost::system::error_code err;
+                message_tosend = chronoscopist::chrmessage::generate_message(chronoscopist::messagetype::pong, "Pong");
+                do_write(err);
+                break;
+            }
+
+        case chronoscopist::messagetype::lock:
+            std::cout << "LOCK command " << std::endl;
+            break;
+
+        case chronoscopist::messagetype::unlock:
+            std::cout << "UNLOCK command " << std::endl;
+            break;
+
+        default:
+            std::cout << "Recevied unhandled msg type: " << message_received.type << std::endl;
+            break;
+        }
+
+
     }
     do_read();
 }

@@ -68,10 +68,6 @@ int main() {
 		exit(-2);
 	}
 
-	auto result = Db::exec( "INSERT INTO online(ip, time) VALUES(123, NOW() )" );
-	if (result)
-		std::cerr << "Mysql error: " << Db::mysql_error_msg << std::endl;
-
 	try
 	{
 		// ChronoServerConnection::camProxy = &camProxy;

@@ -57,9 +57,11 @@ void ChronoServerConnection::on_read(const boost::system::error_code & err, size
         std::cout << "Received bytes does not correspond size of chronoscopist::message\n";
     else
     {
-        queue_received_push_message(read_buffer_);
+        // queue_received_push_message(read_buffer_);
         std::cout << "Received new message in queue " << messages_in.size() << ": " << read_buffer_.text << std::endl;
     }
+    
+    ServerMsgManager::process_received_message(read_buffer_, ip() );
     do_read();
 }
 
