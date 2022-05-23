@@ -9,10 +9,11 @@
 class ServerMsgManager
 {
     public: 
-        static void start();
+        static void loop();
         static void add_connection(ChronoServerConnection_ptr new_connection_ptr);
         static void queue_message_to_all(const chronoscopist::messagetype msgtype, const char* text);
         static void process_received_message(const chronoscopist::chrmessage msg, std::string ip);
+        static void check_limits();
 
     private:
         static std::list<ChronoServerConnection_ptr> chronoconnections;

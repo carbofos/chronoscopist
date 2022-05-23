@@ -9,9 +9,6 @@
 #include "db.h"
 #include "common.h"
 
-// TODO: Надо определиться как менеджер сообщений будет управляться с очередью подключений из ChronoServerConnection,
-// каждое из которых является отдельным клиентом
-
 using namespace std::chrono_literals;
 
 void ServerMsgManager::queue_message_to_all(const chronoscopist::messagetype msgtype, const char* text)
@@ -52,16 +49,42 @@ void ServerMsgManager::process_received_message(const chronoscopist::chrmessage 
 
 }
 
-void ServerMsgManager::start()
+void ServerMsgManager::loop()
 {
     while (true)
     {
         std::cout << "Queueing new message" << std::endl;
         queue_message_to_all(chronoscopist::messagetype::ping, "Ping");
+        check_limits();
         for (auto connection : chronoconnections)
             connection->send_messages();
-        std::this_thread::sleep_for(10000ms);
+        std::this_thread::sleep_for(60000ms);
     }
+}
+
+void ServerMsgManager::check_limits()
+{
+    // TODO: Possible is better to move to separate business logic class
+    for (auto connection : chronoconnections)
+    {
+        std::cout << "Checking limits for " << connection->ip() << std::endl;
+        std::ostringstream query_oss;
+
+        query_oss << "SELECT SUM(1) FROM online WHERE ip=" << ip_to_long(connection->ip()) << " ";
+        std::cout << query_oss.str() << std::endl;
+        auto dbresult = Db::query_select(query_oss.str());
+        if (!dbresult)
+        {
+            std::cerr << "Mysql error: " << Db::mysql_error_msg << std::endl;
+            break;
+        }
+        if (Db::num_fields(dbresult) > 0)
+            while ( Db::row_type row = Db::fetch_row(dbresult) )
+                std::cout << "Total records: " << row[0] << std::endl;
+
+    }
+    
+
 }
 
 void ServerMsgManager::add_connection(ChronoServerConnection_ptr new_connection_ptr)

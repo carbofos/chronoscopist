@@ -79,7 +79,7 @@ int main() {
 	{
 		std::cerr << e.what() << std::endl;
 	}
-	std::thread msgmanager( ServerMsgManager::start );
+	std::thread msgmanager( ServerMsgManager::loop );
 	chronoServer.glob_io_service->run();
 
 	Db::close();

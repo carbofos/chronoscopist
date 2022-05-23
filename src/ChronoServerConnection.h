@@ -19,6 +19,7 @@ class ChronoServerConnection : public std::enable_shared_from_this<ChronoServerC
         void queue_tosend_push_message(chronoscopist::chrmessage);
         void queue_received_push_message(chronoscopist::chrmessage);
         chronoscopist::chrmessage queue_pop_message();
+        std::string ip();
 
     protected:
         ChronoServerConnection(const ChronoServerConnection&) = delete;
@@ -33,7 +34,6 @@ class ChronoServerConnection : public std::enable_shared_from_this<ChronoServerC
         void do_reconnect();
         void do_disconnect();
         chronoscopist::chrmessage read_buffer_;
-        std::string ip();
         std::queue<chronoscopist::chrmessage> messages_in;
         std::queue<chronoscopist::chrmessage> messages_out;
 };
