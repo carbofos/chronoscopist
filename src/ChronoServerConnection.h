@@ -27,7 +27,7 @@ class ChronoServerConnection : public std::enable_shared_from_this<ChronoServerC
         boost::asio::ip::tcp::socket sock_;
 
         void on_read(const boost::system::error_code & err, const size_t bytes);
-        void on_write(const boost::system::error_code & err, const size_t bytes);
+        void on_sendfinished(const boost::system::error_code & err, const size_t bytes);
         void do_read();
         size_t read_complete(const boost::system::error_code & err, const size_t bytes);
         void do_connect();

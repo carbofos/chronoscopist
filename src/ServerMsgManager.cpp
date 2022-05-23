@@ -11,7 +11,7 @@
 
 using namespace std::chrono_literals;
 
-void ServerMsgManager::queue_message_to_all(const chronoscopist::messagetype msgtype, const char* text)
+void ServerMsgManager::queue_message_to_all(const chronoscopist::messagetype &msgtype, const char* text)
 {
     auto msg = chronoscopist::chrmessage::generate_message(msgtype, text);
     std::cout << "chronoconnections len: " << chronoconnections.size() << std::endl;
@@ -80,8 +80,22 @@ void ServerMsgManager::check_limits()
         }
         if (Db::num_fields(dbresult) > 0)
             while ( Db::row_type row = Db::fetch_row(dbresult) )
-                std::cout << "Total records: " << row[0] << std::endl;
+            {
+                int minutes = 0;
+                try
+                {
+                    minutes = std::stoi(row[0]);
+                }
+                catch (...)
+                {
+                    std::cerr << "Can't convert selected data to int: " << row[0] << std::endl;
+                    break;
+                }
 
+                auto msg = chronoscopist::chrmessage::generate_message(chronoscopist::messagetype::lock, "Your time is out!");
+                connection->queue_tosend_push_message(msg);
+                std::cout << "Total records: " << minutes << std::endl;
+            }
     }
     
 

@@ -74,14 +74,15 @@ void ChronoServerConnection::do_read()
 
 void ChronoServerConnection::send_messages()
 {
-    while (messages_out.size() > 0)
+    if (messages_out.size() > 0)
     {
         auto outmsg = queue_pop_message();
         std::cout << "ChronoServerConnection::send_messages() with size " << sizeof(chronoscopist::chrmessage) << " to " << ip() << std::endl;
+        std::cout << outmsg.text << std::endl;
         // sock_.async_write_some( boost::asio::buffer(&outmsg, sizeof(chronoscopist::chrmessage)),
         //             boost::bind(&ChronoServerConnection::on_write, shared_from_this(), boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred) );
         boost::asio::async_write(sock_, boost::asio::buffer(&outmsg, sizeof(chronoscopist::chrmessage)),
-                boost::bind(&ChronoServerConnection::on_write, shared_from_this(), boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred) );
+                boost::bind(&ChronoServerConnection::on_sendfinished, shared_from_this(), boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred) );
     }
 
 }
@@ -104,14 +105,15 @@ void ChronoServerConnection::queue_received_push_message(chronoscopist::chrmessa
     messages_in.push(newmessage);
 }
 
-void ChronoServerConnection::on_write(const boost::system::error_code & err, const size_t bytes)
+void ChronoServerConnection::on_sendfinished(const boost::system::error_code & err, const size_t bytes)
 {
-    std::cout << "Message on_write() send bytes " << bytes << std::endl;
+    std::cout << "Message on_sendfinished() send bytes " << bytes << std::endl;
     if ( err)
     {
-        std::cerr << "Error in on_write(): " << err.message() << std::endl;
+        std::cerr << "Error in on_sendfinished(): " << err.message() << std::endl;
         return;
     }
+    send_messages();
 }
 
 size_t ChronoServerConnection::read_complete(const boost::system::error_code & err, const size_t bytes)
