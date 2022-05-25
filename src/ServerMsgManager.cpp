@@ -8,6 +8,7 @@
 #include "chronodto.h"
 #include "db.h"
 #include "common.h"
+#include "config.h"
 
 using namespace std::chrono_literals;
 
@@ -78,6 +79,7 @@ void ServerMsgManager::check_limits()
             std::cerr << "Mysql error: " << Db::mysql_error_msg << std::endl;
             break;
         }
+
         if (Db::num_fields(dbresult) > 0)
             while ( Db::row_type row = Db::fetch_row(dbresult) )
             {
@@ -92,7 +94,12 @@ void ServerMsgManager::check_limits()
                     break;
                 }
 
-                auto msg = chronoscopist::chrmessage::generate_message(chronoscopist::messagetype::lock, "Your time is out!");
+                chronoscopist::chrmessage msg;
+                if (minutes > MINUTES_LIMIT)
+                    msg = chronoscopist::chrmessage::generate_message(chronoscopist::messagetype::lock, "Your time is out!");
+                else
+                    msg = chronoscopist::chrmessage::generate_message(chronoscopist::messagetype::unlock, "");
+
                 connection->queue_tosend_push_message(msg);
                 std::cout << "Total records: " << minutes << std::endl;
             }
