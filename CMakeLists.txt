@@ -14,16 +14,22 @@ execute_process(COMMAND mysql_config --cflags
 execute_process(COMMAND mysql_config --libs
     OUTPUT_VARIABLE MYSQL_LIBS OUTPUT_STRIP_TRAILING_WHITESPACE)
 
+file(GLOB SERVER_SOURCES  ${PROJECT_SOURCE_DIR}/src/*.cpp )
+file(GLOB CLIENT_SOURCES
+    ${PROJECT_SOURCE_DIR}/src/ChronoClientConnection.cpp
+    ${PROJECT_SOURCE_DIR}/src/chronodto.cpp
+    ${PROJECT_SOURCE_DIR}/src/common.cpp
+    ${PROJECT_SOURCE_DIR}/src/config.cpp
+    )
 
-#set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
-file(GLOB SOURCES  ${PROJECT_SOURCE_DIR}/src/*.cpp )
 message(STATUS Mainsources: ${SOURCES})
-include_directories( ${Boost_INCLUDE_DIR}  third-party )
-include_directories(${MYSQL_INCLUDE_DIR})
-find_package( Boost 1.40 REQUIRED COMPONENTS program_options unit_test_framework log)
-ADD_DEFINITIONS(-DBOOST_LOG_DYN_LINK)
 include_directories( ${Boost_INCLUDE_DIR} )
-link_libraries( ${MYSQL_LIBRARY} ${Boost_LIBRARIES} pthread stdc++fs ${MYSQL_LIBS} )
-add_executable(chronoscopist-server ${PROJECT_SOURCE_DIR}/src/chronoscopist-server.cxx ${SOURCES})
-add_executable(chronoscopist-client ${PROJECT_SOURCE_DIR}/src/chronoscopist-client.cxx ${SOURCES})
+add_executable(chronoscopist-server ${PROJECT_SOURCE_DIR}/src/chronoscopist-server.cxx ${SERVER_SOURCES})
+add_executable(chronoscopist-client ${PROJECT_SOURCE_DIR}/src/chronoscopist-client.cxx ${CLIENT_SOURCES})
+include_directories( ${Boost_INCLUDE_DIR}  third-party )
+target_include_directories(chronoscopist-server PUBLIC ${MYSQL_INCLUDE_DIR})
+find_package( Boost 1.40 REQUIRED COMPONENTS log)
+ADD_DEFINITIONS(-DBOOST_LOG_DYN_LINK)
+target_link_libraries(chronoscopist-server PUBLIC ${Boost_LIBRARIES} pthread stdc++fs ${MYSQL_LIBS})
+target_link_libraries(chronoscopist-client PUBLIC ${Boost_LIBRARIES} )
 

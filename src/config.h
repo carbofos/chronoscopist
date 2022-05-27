@@ -7,8 +7,6 @@ template <typename... Args> inline void unused(Args&&...) {}
 #define VERSION_1 100000001
 #define MAX_MESSAGE_TEXT 100
 
-#define MINUTES_LIMIT 10
-
 class Config
 {
     Config() = delete;

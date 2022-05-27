@@ -71,7 +71,7 @@ void ServerMsgManager::check_limits()
         std::cout << "Checking limits for " << connection->ip() << std::endl;
         std::ostringstream query_oss;
 
-        query_oss << "SELECT SUM(1) FROM online WHERE ip=" << ip_to_long(connection->ip()) << " ";
+        query_oss << "SELECT SUM(1) FROM online WHERE DATE(time)=CURDATE() AND ip= " << ip_to_long(connection->ip());
         std::cout << query_oss.str() << std::endl;
         auto dbresult = Db::query_select(query_oss.str());
         if (!dbresult)
@@ -95,7 +95,7 @@ void ServerMsgManager::check_limits()
                 }
 
                 chronoscopist::chrmessage msg;
-                if (minutes > MINUTES_LIMIT)
+                if (minutes > std::stoi(Config::options.at("timelimit")))
                     msg = chronoscopist::chrmessage::generate_message(chronoscopist::messagetype::lock, "Your time is out!");
                 else
                     msg = chronoscopist::chrmessage::generate_message(chronoscopist::messagetype::unlock, "");

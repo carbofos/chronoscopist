@@ -119,21 +119,18 @@ void ChronoClientConnection::on_read(const boost::system::error_code & err, size
 
         case chronoscopist::messagetype::lock:
             std::cout << "LOCK command " << std::endl;
-            // system("/usr/bin/touch /tmp/1.lock");
             system("DISPLAY=:0 /usr/bin/xset dpms force off");
             break;
 
         case chronoscopist::messagetype::unlock:
             std::cout << "UNLOCK command " << std::endl;
-            system("/usr/bin/touch /tmp/1.unlock");
+            system("DISPLAY=:0 /usr/bin/xset dpms force on");
             break;
 
         default:
             std::cout << "Recevied unhandled msg type: " << message_received.type << std::endl;
             break;
         }
-
-
     }
     do_read();
 }

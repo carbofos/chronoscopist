@@ -1,7 +1,6 @@
 #pragma once
 #include <memory>
 #include <iostream>
-#include <boost/bind/bind.hpp>
 #include <boost/asio.hpp>
 #include <string>
 #include "chronodto.h"
