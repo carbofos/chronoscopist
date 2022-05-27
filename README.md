@@ -43,3 +43,5 @@ Check out once again: chronoserver.cfg should be in the same directory.
 ( Change 192.168.1.1 to your chronoscopist server IP )
 
 ./chronoscopist-client 192.168.1.1
+
+(C) Novak Sergey 2022
